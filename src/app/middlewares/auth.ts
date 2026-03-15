@@ -2,8 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import { AppError } from "../utils/app_error";
 import { jwtHelpers, JwtPayloadType } from "../utils/JWT";
 import config from "../config";
-import { TRole } from "../modules/auth/auth.interface";
 import { User_Model } from "../modules/auth/auth.schema";
+import { TRole } from "../modules/auth/auth.interface";
 
 declare global {
   namespace Express {
@@ -16,13 +16,14 @@ declare global {
 const auth = (...role: TRole[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const token = req.headers.authorization || req.cookies.accessToken;
+      const token = req.headers?.authorization || req.cookies?.accessToken;
+      // console.log(token);
       if (!token) {
         throw new AppError(401, "You are not authorized!");
       }
 
       const verifyUser = jwtHelpers.verifyToken(token, config.access_token_secret as string);
-
+      // console.log(verifyUser);
       if (!role.length || !role.includes(verifyUser.role)) {
         throw new AppError(401, "You are not authorized!!");
       }
