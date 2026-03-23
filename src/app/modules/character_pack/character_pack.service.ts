@@ -1,7 +1,9 @@
 import { AppError } from "../../utils/app_error";
 import { uploadToCloudinary } from "../../utils/cloudinaryUploader";
-import { TMedia } from "./character_pack.interface";
-import { Character_Pack_Model, Media_Model } from "./character_pack.schema";
+import { TMedia } from "../media/media.interface";
+import { Media_Model } from "../media/media.schema";
+import { Character_Pack_Model } from "./character_pack.schema";
+import { User_Model } from "../auth/auth.schema";
 
 const create_pack_into_db = async (body: any, files: any) => {
   if (!files?.cover?.[0]) {
@@ -83,19 +85,17 @@ const create_pack_into_db = async (body: any, files: any) => {
 };
 
 const get_all_character_pack_from_db = async () => {
-  const result = await Character_Pack_Model.find();
-
+  const result = await Character_Pack_Model.find({ isDeleted: { $ne: true } });
   return result;
 };
 
 const get_single_character_pack_from_db = async (packId: string) => {
-  console.log(packId);
-  const result = await Character_Pack_Model.findById(packId).lean();
-  //   console.log(result);
+  const result = await Character_Pack_Model.findOne({ _id: packId, isDeleted: { $ne: true } }).lean();
   if (!result) {
     throw new Error("Character pack not found");
   }
-  const media = await Media_Model.find({ packId }).lean();
+
+  const media = await Media_Model.find({ packId, isDeleted: { $ne: true } }).lean();
 
   const groupedMedia: {
     audio: TMedia[];
@@ -119,8 +119,56 @@ const get_single_character_pack_from_db = async (packId: string) => {
   };
 };
 
+const update_pack_in_db = async (packId: string, payload: Partial<any>) => {
+  const result = await Character_Pack_Model.findOneAndUpdate(
+    { _id: packId, isDeleted: { $ne: true } }, 
+    payload, 
+    { new: true }
+  );
+  if (!result) throw new AppError(404, "Character pack not found or deleted");
+  return result;
+};
+
+const soft_delete_pack_from_db = async (packId: string) => {
+  const result = await Character_Pack_Model.findByIdAndUpdate(packId, { isDeleted: true }, { new: true });
+  if (!result) throw new AppError(404, "Character pack not found");
+  return result;
+};
+
+const increment_view_count = async (packId: string) => {
+  const result = await Character_Pack_Model.findOneAndUpdate(
+    { _id: packId, isDeleted: { $ne: true } },
+    { $inc: { views: 1 } },
+    { new: true }
+  );
+  if (!result) throw new AppError(404, "Character pack not found or deleted");
+  return result;
+};
+
+const toggle_favorite_pack = async (packId: string, userEmail: string) => {
+  const user = await User_Model.findOne({ email: userEmail });
+  if (!user) throw new AppError(404, "User not found");
+
+  const pack = await Character_Pack_Model.findOne({ _id: packId, isDeleted: { $ne: true } });
+  if (!pack) throw new AppError(404, "Character pack not found or deleted");
+
+  const isFavorited = user.favoritePacks?.some(id => id.toString() === packId.toString());
+
+  if (isFavorited) {
+    await User_Model.findByIdAndUpdate(user._id, { $pull: { favoritePacks: packId }});
+    return { favorited: false };
+  } else {
+    await User_Model.findByIdAndUpdate(user._id, { $addToSet: { favoritePacks: packId }});
+    return { favorited: true };
+  }
+};
+
 export const character_pack_service = {
   create_pack_into_db,
   get_all_character_pack_from_db,
   get_single_character_pack_from_db,
+  update_pack_in_db,
+  soft_delete_pack_from_db,
+  increment_view_count,
+  toggle_favorite_pack,
 };

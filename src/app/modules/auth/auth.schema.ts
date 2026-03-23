@@ -78,6 +78,20 @@ const user_schema = new Schema<TUser>({
     type: Boolean,
     default: false,
   },
+
+  favoritePacks: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "CharacterPack",
+    },
+  ],
+
+  favoriteMedia: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Media",
+    },
+  ],
 });
 
 export const User_Model = model("User", user_schema);

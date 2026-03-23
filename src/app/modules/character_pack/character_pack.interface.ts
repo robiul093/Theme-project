@@ -4,9 +4,6 @@ export type TPackType = "free" | "premium";
 
 export type TPackStatus = "draft" | "published";
 
-export type TMediaType = "wallpaper" | "audio" | "video";
-
-
 export type TCharacterPack = {
     _id?: string;
 
@@ -24,28 +21,9 @@ export type TCharacterPack = {
     downloads: number;
     purchases: number;
     conversionRate: number;
+    
+    isDeleted: boolean;
 
     createdAt?: Date;
     updatedAt?: Date;
-}
-
-export type TMedia = {
-    _id?: string;
-
-    packId: Types.ObjectId;
-
-    type: TMediaType;
-
-    title: string;
-    author: string;
-
-    coverImage: string;
-    fileUrl: string;
-
-    prompt?: string; // only wallpaper
-
-    views: number;
-    downloads: number;
-
-    createdAt?: Date;
 }

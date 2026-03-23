@@ -1,6 +1,8 @@
 import express from "express";
 import { character_pack_controller } from "./character_pack.controller";
 import { upload } from "../../utils/cloudinaryUploader";
+import auth from "../../middlewares/auth";
+import { USER_ROLE } from "../../../constants/auth.constant";
 
 const router = express.Router();
 
@@ -20,5 +22,10 @@ router.post(
 
 router.get("/", character_pack_controller.get_all_character_pack);
 router.get("/:id", character_pack_controller.get_single_character_pack);
+
+router.patch("/:id", auth(USER_ROLE.ADMIN), character_pack_controller.update_pack);
+router.delete("/:id", auth(USER_ROLE.ADMIN), character_pack_controller.soft_delete_pack);
+router.patch("/:id/views", character_pack_controller.increment_view);
+router.patch("/:id/favorite", auth(USER_ROLE.USER, USER_ROLE.ADMIN), character_pack_controller.toggle_favorite);
 
 export const characterPackRouter = router;

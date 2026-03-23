@@ -46,8 +46,63 @@ const get_single_character_pack = catchAsync(async (req: Request, res: Response)
   });
 });
 
+const update_pack = catchAsync(async (req: Request, res: Response) => {
+  const packId = req.params.id;
+  const result = await character_pack_service.update_pack_in_db(packId, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Character pack updated successfully",
+    data: result,
+  });
+});
+
+const soft_delete_pack = catchAsync(async (req: Request, res: Response) => {
+    const packId = req.params.id;
+    await character_pack_service.soft_delete_pack_from_db(packId);
+  
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Character pack deleted successfully",
+      data: null,
+    });
+});
+  
+const increment_view = catchAsync(async (req: Request, res: Response) => {
+    const packId = req.params.id;
+    const result = await character_pack_service.increment_view_count(packId);
+  
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Character pack view count incremented successfully",
+      data: result,
+    });
+});
+  
+const toggle_favorite = catchAsync(async (req: Request, res: Response) => {
+    const packId = req.params.id;
+    const userEmail = req.user?.email;
+  
+    if (!userEmail) throw new AppError(401, "Unauthorized");
+  
+    const result = await character_pack_service.toggle_favorite_pack(packId, userEmail);
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: result.favorited ? "Character pack added to favorites" : "Character pack removed from favorites",
+      data: result,
+    });
+});
+
 export const character_pack_controller = {
   create_character_pack,
   get_all_character_pack,
   get_single_character_pack,
+  update_pack,
+  soft_delete_pack,
+  increment_view,
+  toggle_favorite
 };

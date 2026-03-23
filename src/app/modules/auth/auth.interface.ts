@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { ACCOUNT_STATUS, USER_ROLE } from "../../../constants/auth.constant";
 
 export type TRole = (typeof USER_ROLE)[keyof typeof USER_ROLE];
@@ -17,4 +18,6 @@ export type TUser = {
   otpExpiresAt?: Date;
   isActive?: TAccountStatus;
   isDeleted?: boolean;
+  favoritePacks?: Types.ObjectId[];
+  favoriteMedia?: Types.ObjectId[];
 };
