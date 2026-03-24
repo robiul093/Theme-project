@@ -4,9 +4,32 @@ import { sendResponse } from "../../utils/send_response";
 import { media_service } from "./media.service";
 import { AppError } from "../../utils/app_error";
 
+const add_media = catchAsync(async (req: Request, res: Response) => {
+  const result = await media_service.add_media_into_db(req.body, req.files);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 201,
+    message: "Media added successfully",
+    data: result,
+  });
+});
+
+const get_single_media = catchAsync(async (req: Request, res: Response) => {
+  const mediaId = req.params.id;
+  const result = await media_service.get_single_media_from_db(mediaId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Media retrieved successfully",
+    data: result,
+  });
+});
+
 const update_media = catchAsync(async (req: Request, res: Response) => {
   const mediaId = req.params.id;
-  const result = await media_service.update_media_in_db(mediaId, req.body);
+  const result = await media_service.update_media_in_db(mediaId, req.body, req.files);
 
   sendResponse(res, {
     success: true,
@@ -59,6 +82,8 @@ const toggle_favorite = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const media_controller = {
+  get_single_media,
+  add_media,
   update_media,
   soft_delete_media,
   increment_view,

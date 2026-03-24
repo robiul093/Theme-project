@@ -48,7 +48,13 @@ const get_single_character_pack = catchAsync(async (req: Request, res: Response)
 
 const update_pack = catchAsync(async (req: Request, res: Response) => {
   const packId = req.params.id;
-  const result = await character_pack_service.update_pack_in_db(packId, req.body);
+  const payload = req.body;
+  const file = req.file;
+  
+  if (!payload && !file) {
+    throw new AppError(404, "Character pack payload or cover file not found");
+  }
+  const result = await character_pack_service.update_pack_in_db(packId, payload, file);
 
   sendResponse(res, {
     success: true,

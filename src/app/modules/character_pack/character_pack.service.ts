@@ -119,12 +119,27 @@ const get_single_character_pack_from_db = async (packId: string) => {
   };
 };
 
-const update_pack_in_db = async (packId: string, payload: Partial<any>) => {
+const update_pack_in_db = async (packId: string, payload: Partial<any>, file?: any) => {
+
+  const isPackExist = await Character_Pack_Model.findOne({ _id: packId, isDeleted: { $ne: true } });
+  if (!isPackExist) {
+    throw new AppError(404, "Character pack not found or deleted");
+  }
+
+  if (file) {
+    const coverUpload = await uploadToCloudinary(file);
+    payload.coverImage = coverUpload.url;
+    console.log("coverImage :", coverUpload)
+  }
+  console.log("payload :", payload);
+
   const result = await Character_Pack_Model.findOneAndUpdate(
-    { _id: packId, isDeleted: { $ne: true } }, 
-    payload, 
+    { _id: packId, isDeleted: { $ne: true } },
+    payload,
     { new: true }
   );
+  console.log("result :", result);
+
   if (!result) throw new AppError(404, "Character pack not found or deleted");
   return result;
 };
@@ -155,10 +170,10 @@ const toggle_favorite_pack = async (packId: string, userEmail: string) => {
   const isFavorited = user.favoritePacks?.some(id => id.toString() === packId.toString());
 
   if (isFavorited) {
-    await User_Model.findByIdAndUpdate(user._id, { $pull: { favoritePacks: packId }});
+    await User_Model.findByIdAndUpdate(user._id, { $pull: { favoritePacks: packId } });
     return { favorited: false };
   } else {
-    await User_Model.findByIdAndUpdate(user._id, { $addToSet: { favoritePacks: packId }});
+    await User_Model.findByIdAndUpdate(user._id, { $addToSet: { favoritePacks: packId } });
     return { favorited: true };
   }
 };
