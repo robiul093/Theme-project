@@ -3,6 +3,7 @@ import catchAsync from "../../utils/catch_async";
 import { sendResponse } from "../../utils/send_response";
 import { character_pack_service } from "./character_pack.service";
 import { AppError } from "../../utils/app_error";
+import { JwtPayload } from "jsonwebtoken";
 
 const create_character_pack = catchAsync(async (req: Request, res: Response) => {
   const files = req.files as any;
@@ -20,7 +21,11 @@ const create_character_pack = catchAsync(async (req: Request, res: Response) => 
 });
 
 const get_all_character_pack = catchAsync(async (req: Request, res: Response) => {
-  const result = await character_pack_service.get_all_character_pack_from_db();
+  const user = req?.user;
+  if (!user) {
+    throw new AppError(401, "Unauthorized");
+  }
+  const result = await character_pack_service.get_all_character_pack_from_db(user as JwtPayload);
 
   sendResponse(res, {
     success: true,
@@ -50,7 +55,7 @@ const update_pack = catchAsync(async (req: Request, res: Response) => {
   const packId = req.params.id;
   const payload = req.body;
   const file = req.file;
-  
+
   if (!payload && !file) {
     throw new AppError(404, "Character pack payload or cover file not found");
   }
@@ -65,42 +70,42 @@ const update_pack = catchAsync(async (req: Request, res: Response) => {
 });
 
 const soft_delete_pack = catchAsync(async (req: Request, res: Response) => {
-    const packId = req.params.id;
-    await character_pack_service.soft_delete_pack_from_db(packId);
-  
-    sendResponse(res, {
-      success: true,
-      statusCode: 200,
-      message: "Character pack deleted successfully",
-      data: null,
-    });
+  const packId = req.params.id;
+  await character_pack_service.soft_delete_pack_from_db(packId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Character pack deleted successfully",
+    data: null,
+  });
 });
-  
+
 const increment_view = catchAsync(async (req: Request, res: Response) => {
-    const packId = req.params.id;
-    const result = await character_pack_service.increment_view_count(packId);
-  
-    sendResponse(res, {
-      success: true,
-      statusCode: 200,
-      message: "Character pack view count incremented successfully",
-      data: result,
-    });
+  const packId = req.params.id;
+  const result = await character_pack_service.increment_view_count(packId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Character pack view count incremented successfully",
+    data: result,
+  });
 });
-  
+
 const toggle_favorite = catchAsync(async (req: Request, res: Response) => {
-    const packId = req.params.id;
-    const userEmail = req.user?.email;
-  
-    if (!userEmail) throw new AppError(401, "Unauthorized");
-  
-    const result = await character_pack_service.toggle_favorite_pack(packId, userEmail);
-    sendResponse(res, {
-      success: true,
-      statusCode: 200,
-      message: result.favorited ? "Character pack added to favorites" : "Character pack removed from favorites",
-      data: result,
-    });
+  const packId = req.params.id;
+  const userEmail = req.user?.email;
+
+  if (!userEmail) throw new AppError(401, "Unauthorized");
+
+  const result = await character_pack_service.toggle_favorite_pack(packId, userEmail);
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: result.favorited ? "Character pack added to favorites" : "Character pack removed from favorites",
+    data: result,
+  });
 });
 
 export const character_pack_controller = {

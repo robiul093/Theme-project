@@ -23,8 +23,8 @@ router.post(
   character_pack_controller.create_character_pack
 );
 
-router.get("/", character_pack_controller.get_all_character_pack);
-router.get("/:id", character_pack_controller.get_single_character_pack);
+router.get("/", auth(USER_ROLE.USER, USER_ROLE.ADMIN), character_pack_controller.get_all_character_pack);
+router.get("/:id", auth(USER_ROLE.USER, USER_ROLE.ADMIN), character_pack_controller.get_single_character_pack);
 
 router.patch("/:id", auth(USER_ROLE.ADMIN), upload.single("coverImage"), RequestValidator(character_pack_validation.character_pack_update_schema), character_pack_controller.update_pack);
 router.delete("/:id", auth(USER_ROLE.ADMIN), character_pack_controller.soft_delete_pack);
