@@ -27,6 +27,10 @@ const character_pack_schema = new Schema<TCharacterPack>(
         purchases: { type: Number, default: 0 },
         conversionRate: { type: Number, default: 0 },
         isDeleted: { type: Boolean, default: false },
+
+        dayLimit: Number,
+        discountPrice: Number,
+        dayLimitExpireAt: Date,
     },
     { timestamps: true }
 );

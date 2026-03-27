@@ -12,17 +12,17 @@ export type TCharacterPack = {
 
     type: TPackType;
     price?: number;
-
     coverImage: string;
-
     status: TPackStatus;
-
     views: number;
     downloads: number;
     purchases: number;
     conversionRate: number;
-    
     isDeleted: boolean;
+
+    dayLimit?: number;
+    discountPrice?: number;
+    dayLimitExpireAt?: Date;
 
     createdAt?: Date;
     updatedAt?: Date;

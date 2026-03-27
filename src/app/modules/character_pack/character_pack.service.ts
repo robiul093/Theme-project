@@ -11,6 +11,25 @@ const create_pack_into_db = async (body: any, files: any) => {
     throw new AppError(400, "Pack cover image is required");
   }
 
+  if (body.type === "premium" && !body.price) {
+    throw new AppError(400, "Premium pack required price");
+  }
+
+  if (body.dayLimit) {
+    if (!body.discountPrice) {
+      throw new AppError(400, "Discount price is required for day limit");
+    }
+
+    if (!body.price) {
+      throw new AppError(400, "Price is required for day limit");
+    }
+
+    const dayLimit = Number(body.dayLimit);
+    const dayLimitExpireAt = new Date(Date.now() + dayLimit * 24 * 60 * 60 * 1000);
+    body.dayLimitExpireAt = dayLimitExpireAt;
+
+  }
+
   // 1️⃣ upload pack cover
   const coverUpload = await uploadToCloudinary(files.cover[0]);
 
@@ -138,9 +157,27 @@ const get_single_character_pack_from_db = async (packId: string) => {
 };
 
 const update_pack_in_db = async (packId: string, payload: Partial<any>, file?: any) => {
+  const { discountPrice, dayLimit, price } = payload;
+
   const isPackExist = await Character_Pack_Model.findOne({ _id: packId, isDeleted: { $ne: true } });
   if (!isPackExist) {
     throw new AppError(404, "Character pack not found or deleted");
+  }
+
+  if (discountPrice || dayLimit) {
+    if (Number(discountPrice) && !dayLimit && !isPackExist.dayLimit) {
+      throw new AppError(400, "Day limit is required for discount price");
+    }
+    if (Number(dayLimit) && !discountPrice && !isPackExist.discountPrice) {
+      throw new AppError(400, "Discount price is required for day limit");
+    }
+    if (dayLimit && discountPrice && !price && !isPackExist.price) {
+      throw new AppError(400, "Price is required for day limit and discount price");
+    }
+    if (dayLimit && discountPrice) {
+      const dayLimitExpireAt = new Date(Date.now() + Number(dayLimit) * 24 * 60 * 60 * 1000);
+      payload.dayLimitExpireAt = dayLimitExpireAt;
+    }
   }
 
   if (file) {

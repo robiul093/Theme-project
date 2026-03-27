@@ -6,10 +6,34 @@ import { AppError } from "../../utils/app_error";
 import { JwtPayload } from "jsonwebtoken";
 
 const create_character_pack = catchAsync(async (req: Request, res: Response) => {
+  const { price, dayLimit, discountPrice } = req.body;
+
   const files = req.files as any;
   if (!files?.cover?.[0]?.buffer) {
-    throw new Error("No cover file buffer found");
+    throw new AppError(400, "No cover file buffer found");
   }
+
+  if (req.body.type === "premium" && !req.body.price) {
+    throw new AppError(400, "Premium pack required price");
+  }
+
+  if (
+    (dayLimit && !discountPrice) ||
+    (discountPrice && !dayLimit)
+  ) {
+    throw new AppError(
+      400,
+      "discountPrice and dayLimit must be provided together"
+    );
+  }
+
+  if ((dayLimit || discountPrice) && !price) {
+    throw new AppError(
+      400,
+      "price is required when applying discount"
+    );
+  }
+
   const result = await character_pack_service.create_pack_into_db(req.body, req.files);
 
   sendResponse(res, {
