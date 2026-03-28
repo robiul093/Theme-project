@@ -3,6 +3,7 @@ import { authRouter } from "./app/modules/auth/auth.route";
 import { characterPackRouter } from "./app/modules/character_pack/character_pack.route";
 import { mediaRouter } from "./app/modules/media/media.route";
 import { plan_route } from "./app/modules/plan/plan.route";
+import { Subscription_Routes } from "./app/modules/subscription/subscription.route";
 
 const appRouter = Router();
 
@@ -11,6 +12,7 @@ const moduleRoutes = [
     { path: "/character-pack", route: characterPackRouter },
     { path: "/media", route: mediaRouter },
     { path: "/plan", route: plan_route },
+    { path: "/subscription", route: Subscription_Routes },
 ];
 
 moduleRoutes.forEach((route) => appRouter.use(route.path, route.route));

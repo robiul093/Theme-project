@@ -3,6 +3,7 @@ import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import fs from "fs";
 import streamifier from "streamifier";
 import config from "../config";
+import { AppError } from "./app_error";
 
 // Cloudinary configuration
 cloudinary.config({
@@ -46,7 +47,7 @@ export const uploadToCloudinary = async (
     // Case 2: multer file (buffer)
     else {
       if (!file?.buffer) {
-        throw new Error("File buffer missing");
+        throw new AppError(400, "File buffer missing");
       }
 
       const resource_type = getResourceType(file.mimetype);
@@ -76,7 +77,7 @@ export const uploadToCloudinary = async (
     };
   } catch (error) {
     console.error("Cloudinary upload failed:", error);
-    throw new Error("Cloudinary upload failed");
+    throw new AppError(500, "Cloudinary upload failed");
   }
 };
 

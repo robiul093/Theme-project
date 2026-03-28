@@ -129,7 +129,7 @@ const get_single_character_pack_from_db = async (packId: string) => {
     isDeleted: { $ne: true },
   }).lean();
   if (!result) {
-    throw new Error("Character pack not found");
+    throw new AppError(404, "Character pack not found");
   }
 
   const media = await Media_Model.find({ packId, isDeleted: { $ne: true } }).lean();
