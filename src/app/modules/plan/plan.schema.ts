@@ -28,6 +28,9 @@ const plan_schema = new Schema<IPlan>({
         type: Boolean,
         default: true
     },
+    stripe_product_id: {
+        type: String
+    },
     stripe_price_id: {
         type: String
     }

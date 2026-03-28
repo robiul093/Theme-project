@@ -20,6 +20,45 @@ const plan_create = catchAsync(async (req: Request, res: Response) => {
     });
 })
 
+const update_plan = catchAsync(async (req: Request, res: Response) => {
+    const { name, description } = req.body;
+    if(!name && !description){
+        throw new AppError(400, "Name or description are required");
+    }
+    const { id } = req.params;
+    const result = await Plan_Service.update_plan_in_db(id, req.body);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Plan updated successfully",
+        data: result,
+    });
+});
+
+const toggle_plan = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await Plan_Service.toggle_plan_status(id);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Plan status toggled successfully",
+        data: result,
+    });
+});
+
+const get_active_plans = catchAsync(async (req: Request, res: Response) => {
+    const result = await Plan_Service.get_active_plans();
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Active plans fetched successfully",
+        data: result,
+    });
+});
+
 export const Plan_Controller = {
-    plan_create
+    plan_create,
+    update_plan,
+    toggle_plan,
+    get_active_plans,
 }
